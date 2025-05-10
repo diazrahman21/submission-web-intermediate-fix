@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="shortcut icon" href="favicon.png">
+
+  <title>StoryApp</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+  <body>
+    <header>
+      <div class="main-header container">
+        <a class="brand-name" href="#/">
+          <img src="favicon.png" alt="App Logo" class="brand-logo-icon" />
+          Story App
+        </a>
+
+        <nav id="navigation-drawer" class="navigation-drawer">
+          <ul id="nav-list" class="nav-list">
+            <li>
+              <a href="#/">
+                <i class="fa-solid fa-house" style="margin-right:8px;"></i>
+                Home
+              </a>
+            </li>
+            <li>
+              <a href="#/about">
+                <i class="fa-solid fa-circle-info" style="margin-right:8px;"></i>
+                About
+              </a>
+            </li>
+            <li>
+              <button id="logout-btn" class="logout-btn">
+                <i class="fa-solid fa-right-from-bracket" style="margin-right:8px;"></i>
+                Logout
+              </button>
+            </li>
+          </ul>
+        </nav>
+
+        <button id="drawer-button" class="drawer-button">☰</button>
+      </div>
+    </header>
+
+    <main id="main-content" class="main-content"></main>
+
+<footer class="main-footer">
+  Create By : <span class="footer-author">Diaz Ganteng</span>
+</footer>
+
+<script>
+  // Fungsi transisi slide-fade yang lebih smooth
+  function slideFadeTransition(callback) {
+    const mainContent = document.getElementById('main-content');
+    if (!mainContent) return callback();
+
+    // Slide-fade out
+    mainContent.classList.add('slide-fade-out');
+    mainContent.classList.remove('slide-fade-in');
+
+    setTimeout(() => {
+      callback(); // Render halaman baru
+      // Tunggu DOM update, lalu slide-fade in
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          mainContent.classList.remove('slide-fade-out');
+          mainContent.classList.add('slide-fade-in');
+        }, 10);
+      });
+    }, 400); // waktu fade-out, samakan dengan CSS
+  }
+
+  // Patch router agar pakai slideFadeTransition
+  const originalPushState = history.pushState;
+  history.pushState = function(...args) {
+    slideFadeTransition(() => {
+      originalPushState.apply(history, args);
+      window.dispatchEvent(new Event('popstate'));
+    });
+  };
+  window.addEventListener('hashchange', function(e) {
+    slideFadeTransition(() => {});
+  });
+
+  // Logout event delegation (biar tetap jalan)
+  document.addEventListener('DOMContentLoaded', function() {
+    const navList = document.getElementById('nav-list');
+    if (navList) {
+      navList.addEventListener('click', function(e) {
+        if (e.target && e.target.id === 'logout-btn') {
+          localStorage.removeItem('token');
+          window.location.hash = '#/login';
+          window.location.reload();
+        }
+      });
+    }
+  });
+</script>
+  </body>
+</html>
